@@ -18,8 +18,9 @@
    ```
 
 6. `eas build:configure`
+7. `eas device:create`
 
-7. Create a development build:
+8. Create a development build:
    - For iOS simulator:
      ```
      eas build --profile development-simulator --platform ios
@@ -33,7 +34,7 @@
      eas build --profile development --platform android
      ```
 
-8. Install the development build:
+9. Install the development build:
    - For iOS simulator:
      ```
      eas build:run --platform ios
