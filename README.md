@@ -10,14 +10,16 @@
 
 3. `npx expo install react-native-vision-camera`
 
-4. `npm install -g eas-cli`
+4. `npx expo install expo-image-picker`
 
-5. Log in to your Expo account:
+5. `npm install -g eas-cli`
+
+6. Log in to your Expo account:
    ```
    eas login
    ```
 
-6. `eas build:configure`
+7. `eas build:configure`
 
 8. Create a development build:
    `eas build --platform ios --profile development`
