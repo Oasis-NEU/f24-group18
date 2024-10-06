@@ -10,13 +10,21 @@
     "splash": {},
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.audreynge.Attirely"
+      "bundleIdentifier": "com.audreynge.Attirely",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Attirely needs access to your Camera."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.audreynge.Attirely"
     },
     "web": {
       "bundler": "metro",
@@ -25,7 +33,13 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-vision-camera"
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Attirely needs access to your Camera."
+        }
+      ],
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,15 +1,28 @@
-import { Text, View } from "react-native";
+import { Text, View, Pressable, StyleSheet } from "react-native";
+import { useRouter } from 'expo-router'; 
 
 export default function Index() {
+  const router = useRouter();
+  
   return (
     <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      style={styles.container}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <Text>Home page</Text>
+      <Pressable 
+      style={{backgroundColor:'lightblue'}}
+      onPress={() => router.push('./image-scan')}>
+        <Text>this leads to image scan page</Text>
+      </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+      flex: 1,
+      backgroundColor: 'white',
+      alignItems: 'center',
+      justifyContent: 'center'
+  }
+});
