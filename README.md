@@ -18,7 +18,6 @@
    ```
 
 6. `eas build:configure`
-7. `eas device:create`
 
 8. Create a development build:
    - For iOS simulator:
