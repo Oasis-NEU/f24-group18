@@ -8,7 +8,7 @@
 
 2. `npm install`
 
-3. `npx add expo`
+3. `npx add expo` (idk if this is correct im sorry if this messes things up)
 
 4. `npx expo install react-native-vision-camera`
 
