@@ -1,42 +1,25 @@
-import { View, Text, StyleSheet, Pressable, Button, Image, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, Button, Image, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
-import ImageViewer from '../components/ImageViewer';
-import { Stack } from 'expo-router';
-import AWS from 'aws-sdk';
-
-
-const PlaceholderImage = require('../assets/images/blank-gray-rectangle.jpg');
+import { useState, useEffect } from 'react';
+import { loadModel, generateDescription } from '.././models/florence_model.js';
+import AWSHelper from '.././components/AWSHelper';
 
 export default function Wardrobe() {
     const [images, setImages] = useState<string[]>([]); // Array to hold images
-    const [descriptions, setDescriptions] = useState<string[]>([]);  // Array to hold descriptions
+    const [descriptions, setDescriptions] = useState<string[]>([]); // Array to hold descriptions
 
-    AWS.config.update({
-        accessKeyId: 'YOUR_AWS_ACCESS_KEY_ID', // Replace with AWS Access Key ID
-        secretAccessKey: 'YOUR_AWS_SECRET_ACCESS_KEY', // Replace with AWS Secret Access Key
-        region: 'us-east-2', 
-    });
-
-    const s3 = new AWS.S3(); 
-
-    const uploadDescriptionToS3 = async (index: number) => {
-        const params = {
-            Bucket: 'attirely',
-            Key: `descriptions/${Date.now()}.txt`, // Unique key for the description
-            Body: descriptions,
-            ContentType: 'text/plain',
+    // Load the model on component mount
+    useEffect(() => {
+        const initializeModel = async () => {
+            try {
+                await loadModel();
+                console.log('Model loaded successfully');
+            } catch (error) {
+                console.error('Error loading model:', error);
+            }
         };
-
-        try {
-            await s3.putObject(params).promise();
-            alert('Description uploaded successfully!');
-        } catch (error) {
-            console.error('Error uploading description:', error);
-            alert('Failed to upload description.');
-        }
-    };
-
+        initializeModel();
+    }, []);
 
     const pickPhoto = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -44,11 +27,25 @@ export default function Wardrobe() {
             quality: 1,
         });
         if (!result.canceled) {
+            const newImageUri = result.assets[0].uri; // Get the new image URI
             const newImages = [...images, result.assets[0].uri]; // Add new image to the array
             setImages(newImages);
-            setDescriptions([...descriptions, '']); // Add an empty description for the new image
+
+            // Get the description of the uploaded image
+            const description = await getImageDescription(result.assets[0].uri);
+            setDescriptions([...descriptions, description]); // Store the description
         } else {
             Alert.alert('You did not select any image.');
+        }
+    };
+
+    const getImageDescription = async (uri: string) => {
+        try {
+            const description = await generateDescription(uri);
+            return description; // Return the description
+        } catch (error) {
+            console.error('Error generating description:', error);
+            return 'Description not available'; // Fallback description
         }
     };
 
@@ -66,64 +63,60 @@ export default function Wardrobe() {
         if (!result.canceled) {
             const newImages = [...images, result.assets[0].uri]; // Add new image to the array
             setImages(newImages);
-            setDescriptions([...descriptions, '']); // Add an empty description for the new image
         } else {
             Alert.alert('You did not select any image.');
         }
     };
-    
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Wardrobe</Text>
             <Button title="Choose from Gallery" onPress={pickPhoto} />
-            <Button title="Take a Photo" onPress={takePhoto} />
-            {images.map((image, index) => (
-                <View key={index} style={styles.imageContainer}>
-                    <Image source={{ uri: image }} style={styles.image} />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter image description"
-                        value={descriptions[index]}
-                        onChangeText={(text) => {
-                            const newDescriptions = [...descriptions];
-                            newDescriptions[index] = text; // Update the description for the corresponding image
-                            setDescriptions(newDescriptions);
-                        }}
-                    />
-                    <Button title="Upload Description" onPress={() => uploadDescriptionToS3(index)} />
+            <Button title="Take photo" onPress={takePhoto} />
+            <ScrollView>
+                <View style={styles.imageGrid}>
+                    {images.map((image, index) => (
+                        <View key={index} style={styles.imageContainer}>
+                            <Image source={{ uri: image }} style={styles.image} />
+                            <Text style={styles.description}>{descriptions[index]}</Text> {/* Display the description */}
+                        </View>
+                    ))}
                 </View>
-            ))}
+            </ScrollView>
         </View>
     );
 };
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
+        padding: 20,
     },
     title: {
         fontSize: 24,
         marginBottom: 20,
     },
-    image: {
-        width: 200,
-        height: 200,
-        marginTop: 20,
-        borderRadius: 10,
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginTop: 10,
-        width: '80%',
-        paddingHorizontal: 10,
+    imageGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        width: '100%',
     },
     imageContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
+        width: '30%',
+        marginBottom: 10,
+        alignItems: 'center', // Center the description under the image
+    },
+    image: {
+        width: '100%',
+        height: 100, // Adjust height as needed
+        borderRadius: 10,
+    },
+    description: {
+        marginTop: 5,
+        textAlign: 'center', // Center the text
     },
 });
-
